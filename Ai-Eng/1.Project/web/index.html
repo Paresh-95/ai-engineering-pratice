@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7fb">
+  <title>OpenRouter Chat</title>
+  <style>
+    :root { color-scheme: light; --ink:#202532; --muted:#747b8a; --line:#e5e8ef; --accent:#635bdb; --paper:#fff; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:#f6f7fb; color:var(--ink); font:15px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .shell { width:min(960px, 100%); min-height:100vh; margin:auto; display:flex; flex-direction:column; padding:14px 24px 20px; }
+    header { position:sticky; top:10px; z-index:5; display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:74px; padding:12px 16px; border:1px solid #e6e8f0; border-radius:17px; background:rgb(255 255 255 / 94%); box-shadow:0 8px 28px #252b3d0a; backdrop-filter:blur(14px); }
+    .brand { display:flex; align-items:center; gap:12px; min-width:0; }
+    .mark { flex:0 0 40px; width:40px; height:40px; display:grid; place-items:center; border:1px solid #e4e2ff; border-radius:13px; background:#ecebff; color:var(--accent); font-size:21px; }
+    header h1 { margin:0; font-size:16px; line-height:1.25; letter-spacing:-.025em; }
+    .subtitle { margin:3px 0 0; color:var(--muted); font-size:12px; line-height:1.3; }
+    .top-actions { display:flex; align-items:center; gap:14px; }
+    .connection { display:flex; align-items:center; gap:7px; color:#737b8b; font-size:12px; white-space:nowrap; }
+    .connection-dot { width:7px; height:7px; border-radius:50%; background:#8b91a0; box-shadow:0 0 0 3px #f0f1f5; }
+    #new-chat { width:auto; height:36px; flex:initial; padding:0 12px; border:1px solid #e3e5ed; border-radius:10px; background:white; color:#3d4452; font:600 12px/1 system-ui, sans-serif; cursor:pointer; }
+    #new-chat:hover { border-color:#c9c5ff; background:#f8f7ff; color:var(--accent); }
+    #chat { flex:1; padding:28px 0; }
+    .welcome { max-width:520px; margin:13vh auto 0; text-align:center; }
+    .welcome-icon { font-size:32px; }
+    .welcome h2 { margin:12px 0 6px; font-size:25px; letter-spacing:-.04em; }
+    .welcome p { margin:0; color:var(--muted); }
+    .message { display:flex; gap:12px; margin:0 0 24px; animation:arrive .18s ease-out; }
+    @keyframes arrive { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
+    .avatar { flex:0 0 32px; height:32px; display:grid; place-items:center; border-radius:10px; background:#ecebff; color:var(--accent); font-size:14px; font-weight:700; }
+    .user .avatar { background:#e9edf3; color:#50596a; }
+    .body { min-width:0; padding-top:4px; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .body p { margin:0 0 12px; white-space:normal; }
+    .body p:last-child { margin-bottom:0; }
+    .body h1,.body h2,.body h3,.body h4,.body h5,.body h6 { margin:18px 0 8px; line-height:1.3; letter-spacing:-.02em; }
+    .body h1 { font-size:23px; } .body h2 { font-size:20px; } .body h3 { font-size:17px; } .body h4,.body h5,.body h6 { font-size:15px; }
+    .body ul,.body ol { margin:6px 0 12px; padding-left:24px; white-space:normal; }
+    .body li { padding-left:3px; margin:3px 0; }
+    .body hr { border:0; border-top:1px solid var(--line); margin:16px 0; }
+    .body code { padding:2px 5px; border-radius:5px; background:#eff0f5; font: .9em ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .body pre { overflow:auto; padding:12px; border-radius:9px; background:#eff0f5; white-space:pre; }
+    .body pre code { padding:0; background:none; }
+    .role { margin-bottom:5px; font-size:12px; color:var(--muted); font-weight:600; }
+    .pending { color:var(--muted); }
+    .usage { margin-top:10px; color:var(--muted); font-size:12px; }
+    .composer-wrap { position:sticky; bottom:0; padding-top:12px; background:linear-gradient(transparent, #f6f7fb 18px); }
+    form { display:flex; align-items:flex-end; gap:10px; padding:10px; background:var(--paper); border:1px solid #dfe2eb; border-radius:17px; box-shadow:0 8px 28px #252b3d0b; }
+    textarea { flex:1; min-height:42px; max-height:180px; resize:none; border:0; outline:0; padding:10px 8px; background:transparent; color:var(--ink); font:inherit; }
+    textarea::placeholder { color:#9ba1ad; }
+    #send { flex:0 0 42px; width:42px; height:42px; border:0; border-radius:12px; background:var(--accent); color:white; cursor:pointer; font-size:19px; transition:opacity .15s, transform .15s; }
+    #send:hover { transform:translateY(-1px); } #send:disabled { opacity:.45; cursor:default; transform:none; }
+    .hint { margin:9px 0 0; text-align:center; font-size:11px; color:#9298a5; }
+    @media (max-width:600px) { .shell { padding:8px 12px 14px; } header { top:6px; min-height:64px; padding:10px 12px; } .top-actions { gap:8px; } .connection { font-size:0; } .connection-dot { width:8px; height:8px; } #new-chat { height:34px; padding:0 9px; } #chat { padding:20px 0; } .welcome { margin-top:11vh; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="brand"><div class="mark" aria-hidden="true">✳</div><div><h1>OpenRouter Chat</h1><p class="subtitle">A simple streaming assistant</p></div></div>
+      <div class="top-actions"><div class="connection"><span class="connection-dot" aria-hidden="true"></span>Streaming chat</div><button id="new-chat" type="button">＋ New chat</button></div>
+    </header>
+    <section id="chat" aria-live="polite" aria-label="Conversation">
+      <div class="welcome" id="welcome"><div class="welcome-icon">✦</div><h2>What would you like to know?</h2><p>Send a message to start a conversation.</p></div>
+    </section>
+    <div class="composer-wrap"><form id="form"><textarea id="message" rows="1" placeholder="Message the assistant…" aria-label="Your message" required></textarea><button id="send" type="submit" aria-label="Send message">↑</button></form><p class="hint">Enter to send · Shift + Enter for a new line</p></div>
+  </main>
+  <script>
+    const form = document.querySelector('#form');
+    const input = document.querySelector('#message');
+    const send = document.querySelector('#send');
+    const chat = document.querySelector('#chat');
+    const newChat = document.querySelector('#new-chat');
+    let busy = false;
+    function addMessage(role, content = '') {
+      document.querySelector('#welcome')?.remove();
+      const row = document.createElement('article');
+      row.className = `message ${role === 'You' ? 'user' : 'assistant'}`;
+      const avatar = document.createElement('div'); avatar.className = 'avatar'; avatar.textContent = role === 'You' ? 'Y' : '✳';
+      const body = document.createElement('div'); body.className = 'body';
+      const label = document.createElement('div'); label.className = 'role'; label.textContent = role;
+      const text = document.createElement('div'); text.textContent = content;
+      body.append(label, text); row.append(avatar, body); chat.append(row);
+      return { body, text };
+    }
+    function renderMarkdown(markdown) {
+      const escapeHtml = value => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+      const inline = value => escapeHtml(value)
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/__(.+?)__/g, '<strong>$1</strong>')
+        .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>')
+        .replace(/(^|[^_])_([^_\n]+)_/g, '$1<em>$2</em>');
+      const lines = markdown.replace(/\r\n?/g, '\n').split('\n');
+      const blocks = [];
+      let paragraph = [], list = [], listType = '', code = [], inCode = false;
+      const flushParagraph = () => { if (paragraph.length) { blocks.push(`<p>${inline(paragraph.join(' '))}</p>`); paragraph = []; } };
+      const flushList = () => { if (list.length) { blocks.push(`<${listType}>${list.join('')}</${listType}>`); list = []; listType = ''; } };
+      for (const line of lines) {
+        if (/^\s*```/.test(line)) {
+          flushParagraph(); flushList();
+          if (inCode) { blocks.push(`<pre><code>${escapeHtml(code.join('\n'))}</code></pre>`); code = []; }
+          inCode = !inCode; continue;
+        }
+        if (inCode) { code.push(line); continue; }
+        const heading = line.match(/^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$/);
+        const item = line.match(/^\s*(?:[-+*]|\d+[.)])\s+(.+)$/);
+        if (heading) { flushParagraph(); flushList(); const level = heading[1].length; blocks.push(`<h${level}>${inline(heading[2])}</h${level}>`); }
+        else if (/^\s*(---+|\*\*\*+|___+)\s*$/.test(line)) { flushParagraph(); flushList(); blocks.push('<hr>'); }
+        else if (item) { flushParagraph(); const type = /^\s*\d/.test(line) ? 'ol' : 'ul'; if (listType && type !== listType) flushList(); listType = type; list.push(`<li>${inline(item[1])}</li>`); }
+        else if (!line.trim()) { flushParagraph(); flushList(); }
+        else { flushList(); paragraph.push(line.trim()); }
+      }
+      if (inCode) blocks.push(`<pre><code>${escapeHtml(code.join('\n'))}</code></pre>`);
+      flushParagraph(); flushList();
+      return blocks.join('');
+    }
+    async function submitMessage() {
+      const message = input.value.trim();
+      if (!message || busy) return;
+      busy = true; send.disabled = true; input.disabled = true;
+      addMessage('You', message);
+      const reply = addMessage('Assistant'); reply.text.className = 'pending'; reply.text.textContent = 'Thinking…';
+      input.value = ''; input.style.height = 'auto';
+      try {
+        const response = await fetch('/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message}) });
+        if (!response.ok || !response.body) throw new Error(`Request failed (${response.status}).`);
+        const reader = response.body.getReader(); const decoder = new TextDecoder(); let buffer = ''; let started = false; let answerText = '';
+        while (true) {
+          const {value, done} = await reader.read(); buffer += decoder.decode(value || new Uint8Array(), {stream:!done});
+          const frames = buffer.split('\n\n'); buffer = frames.pop();
+          for (const frame of frames) {
+            const line = frame.split('\n').find(part => part.startsWith('data: ')); if (!line) continue;
+            const event = JSON.parse(line.slice(6));
+            if (event.type === 'content') { if (!started) { reply.text.textContent = ''; reply.text.className = ''; started = true; } answerText += event.content; reply.text.innerHTML = renderMarkdown(answerText); }
+            if (event.type === 'usage') { const usage = document.createElement('div'); usage.className = 'usage'; usage.textContent = `Tokens · prompt ${event.usage.prompt_tokens} · reply ${event.usage.completion_tokens} · total ${event.usage.total_tokens}`; reply.body.append(usage); }
+            if (event.type === 'error') throw new Error(event.message);
+          }
+          if (done) break;
+        }
+        if (!started && !reply.text.textContent) reply.text.textContent = 'No response was returned.';
+        reply.text.className = '';
+      } catch (error) { reply.text.className = ''; reply.text.textContent = `Sorry, ${error.message}`; }
+      finally { busy = false; send.disabled = false; input.disabled = false; input.focus(); }
+    }
+    form.addEventListener('submit', event => { event.preventDefault(); submitMessage(); });
+    newChat.addEventListener('click', () => {
+      if (busy) return;
+      chat.innerHTML = '<div class="welcome" id="welcome"><div class="welcome-icon">✦</div><h2>What would you like to know?</h2><p>Send a message to start a conversation.</p></div>';
+      input.value = ''; input.style.height = 'auto'; input.focus();
+    });
+    input.addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); submitMessage(); } });
+    input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = `${Math.min(input.scrollHeight,180)}px`; });
+  </script>
+</body>
+</html>
